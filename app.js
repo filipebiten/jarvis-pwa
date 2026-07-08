@@ -101,16 +101,20 @@ function rankTasks(contexto) {
   });
 }
 
-function isAtrasada(task) {
-  const prazo = toDate(task.prazo);
-  if (!prazo) return false;
-
+// Compara por data de calendário local (não por instante exato), senão um prazo
+// "hoje" já vencido feito à noite aparentaria "vence hoje" em vez de atrasado.
+function diasAteVencimento(prazo) {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
   const prazoDia = new Date(prazo);
   prazoDia.setHours(0, 0, 0, 0);
+  return Math.round((prazoDia - hoje) / (1000 * 60 * 60 * 24));
+}
 
-  return prazoDia < hoje;
+function isAtrasada(task) {
+  const prazo = toDate(task.prazo);
+  if (!prazo) return false;
+  return diasAteVencimento(prazo) < 0;
 }
 
 function motivoLine(task, index) {
@@ -120,7 +124,7 @@ function motivoLine(task, index) {
   const prazo = toDate(task.prazo);
   if (!prazo) return `${nivelLabel}, sem prazo definido`;
 
-  const dias = Math.ceil((prazo - new Date()) / (1000 * 60 * 60 * 24));
+  const dias = diasAteVencimento(prazo);
   if (dias < 0) return `${nivelLabel}, prazo vencido há ${Math.abs(dias)} dia(s)`;
   if (dias === 0) return `${nivelLabel}, vence hoje`;
   return `${nivelLabel}, vence em ${dias} dia(s)`;
