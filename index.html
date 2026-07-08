@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jarvis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <div id="login-screen" class="screen">
+    <div class="brand">
+      <div class="brand-mark">J</div>
+      <h1>JARVIS</h1>
+      <p class="tagline">o que faço agora?</p>
+    </div>
+    <button id="login-btn">
+      <span>Entrar com Google</span>
+    </button>
+  </div>
+
+  <div id="main-screen" class="screen hidden">
+    <header>
+      <div class="brand-inline">
+        <div class="brand-mark small">J</div>
+        <h1>JARVIS</h1>
+      </div>
+      <button id="logout-btn" class="link-btn">Sair</button>
+    </header>
+
+    <div id="context-screen">
+      <p class="prompt">Onde você está?</p>
+      <button id="btn-celular" class="big-btn">
+        <span class="icon">📱</span>
+        <span>Celular</span>
+      </button>
+      <button id="btn-pc" class="big-btn">
+        <span class="icon">💻</span>
+        <span>PC</span>
+      </button>
+    </div>
+
+    <div id="result-screen" class="hidden">
+      <button id="back-btn" class="link-btn">← Voltar</button>
+      <div id="task-list"></div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js?v=7"></script>
+</body>
+</html>
