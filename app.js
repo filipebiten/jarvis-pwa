@@ -78,17 +78,10 @@ function effectiveDevice(task) {
   return task.dispositivo;
 }
 
-// Módulo âncora - desligado no v1 (seção 6, passo 2 / seção 11 do spec).
-// Ponto de extensão: quando ativado, vai promover tarefas de preparo com base em config.ancoras.
-function applyAncoras(tasks) {
-  return tasks;
-}
-
 function rankTasks(contexto) {
   const filtered = allTasks.filter((t) => contexto === "pc" || effectiveDevice(t) === "celular");
-  const withAncoras = applyAncoras(filtered);
 
-  return withAncoras.slice().sort((a, b) => {
+  return filtered.slice().sort((a, b) => {
     const nivelDiff = (NIVEL_ORDER[a.nivel] ?? 99) - (NIVEL_ORDER[b.nivel] ?? 99);
     if (nivelDiff !== 0) return nivelDiff;
 
@@ -144,7 +137,7 @@ function renderTasks(contexto) {
       <h3>${task.titulo}</h3>
       <p class="motivo">${motivoLine(task, i)}</p>
       <p class="prazo">Prazo: ${prazoText}</p>
-      <a href="${task.link_notion}" target="_blank" class="btn-notion">Abrir no Notion</a>
+      <a href="${task.link_notion}" target="_blank" class="btn-notion">${task.origem === "ancora" ? "Abrir na agenda" : "Abrir no Notion"}</a>
       <div class="actions">
         <button class="btn-feito" data-id="${task.notion_id}">✅ Feito</button>
         ${showSoPc ? `<button class="btn-so-pc" data-categoria="${task.categoria}">Só PC</button>` : ""}
