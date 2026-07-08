@@ -42,10 +42,14 @@ const btnCelular = document.getElementById("btn-celular");
 const btnPc = document.getElementById("btn-pc");
 const backBtn = document.getElementById("back-btn");
 const taskList = document.getElementById("task-list");
+const btnAtrasadas = document.getElementById("btn-atrasadas");
+const verMaisBtn = document.getElementById("ver-mais-btn");
 
 let allTasks = [];
 let aprendizadoMap = {};
 let currentContexto = null;
+let filtroAtrasadas = false;
+let mostrarTodas = false;
 const DEVICE_LEARNABLE_CATEGORIAS = ["Pessoal", "Flow"];
 
 // Firestore grava alguns campos (prazo, last_touched) como Timestamp nativo,
@@ -97,6 +101,18 @@ function rankTasks(contexto) {
   });
 }
 
+function isAtrasada(task) {
+  const prazo = toDate(task.prazo);
+  if (!prazo) return false;
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const prazoDia = new Date(prazo);
+  prazoDia.setHours(0, 0, 0, 0);
+
+  return prazoDia < hoje;
+}
+
 function motivoLine(task, index) {
   const nivelLabel = NIVEL_LABEL[task.nivel] || task.nivel;
   if (index !== 0) return nivelLabel;
@@ -113,14 +129,29 @@ function motivoLine(task, index) {
 function renderTasks(contexto) {
   currentContexto = contexto;
   const ranked = rankTasks(contexto);
+  const atrasadas = ranked.filter(isAtrasada);
+
+  btnAtrasadas.classList.toggle("hidden", atrasadas.length === 0);
+  btnAtrasadas.classList.toggle("active", filtroAtrasadas);
+  btnAtrasadas.textContent = filtroAtrasadas
+    ? "← Ver fila completa"
+    : `⚠️ Tarefas atrasadas (${atrasadas.length})`;
+
+  const lista = filtroAtrasadas ? atrasadas : ranked;
+  const exibir = mostrarTodas ? lista : lista.slice(0, 4);
+
   taskList.innerHTML = "";
 
-  if (ranked.length === 0) {
-    taskList.innerHTML = '<p class="empty">Nada na fila. 🎉</p>';
+  if (exibir.length === 0) {
+    const msg = filtroAtrasadas ? "Nenhuma tarefa atrasada. 🎉" : "Nada na fila. 🎉";
+    taskList.innerHTML = `<p class="empty">${msg}</p>`;
+    verMaisBtn.classList.add("hidden");
     return;
   }
 
-  ranked.slice(0, 4).forEach((task, i) => {
+  verMaisBtn.classList.toggle("hidden", mostrarTodas || lista.length <= 4);
+
+  exibir.forEach((task, i) => {
     const card = document.createElement("div");
     card.className = i === 0 ? "task-card top" : "task-card";
 
@@ -220,15 +251,30 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+btnAtrasadas.addEventListener("click", () => {
+  filtroAtrasadas = !filtroAtrasadas;
+  mostrarTodas = false;
+  renderTasks(currentContexto);
+});
+
+verMaisBtn.addEventListener("click", () => {
+  mostrarTodas = true;
+  renderTasks(currentContexto);
+});
+
 btnCelular.addEventListener("click", () => {
   contextScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
+  filtroAtrasadas = false;
+  mostrarTodas = false;
   renderTasks("celular");
 });
 
 btnPc.addEventListener("click", () => {
   contextScreen.classList.add("hidden");
   resultScreen.classList.remove("hidden");
+  filtroAtrasadas = false;
+  mostrarTodas = false;
   renderTasks("pc");
 });
 
