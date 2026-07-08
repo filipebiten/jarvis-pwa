@@ -101,13 +101,20 @@ function rankTasks(contexto) {
   });
 }
 
-// Compara por data de calendário local (não por instante exato), senão um prazo
-// "hoje" já vencido feito à noite aparentaria "vence hoje" em vez de atrasado.
+// "prazo" vem sempre de uma data pura "YYYY-MM-DD" (Notion/N8N), que o
+// Firestore/JS grava e interpreta como meia-noite UTC. Ler essa data com
+// métodos locais (setHours, toLocaleDateString) empurra pro dia anterior pra
+// quem está a oeste de UTC (ex: Campo Grande, UTC-4) — meia-noite UTC é 20h
+// do dia anterior aqui. Por isso lemos o dia pelos componentes UTC, que
+// recuperam a data pretendida, e comparamos com o dia local de hoje.
+function diaCalendario(date) {
+  return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
 function diasAteVencimento(prazo) {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
-  const prazoDia = new Date(prazo);
-  prazoDia.setHours(0, 0, 0, 0);
+  const prazoDia = diaCalendario(prazo);
   return Math.round((prazoDia - hoje) / (1000 * 60 * 60 * 24));
 }
 
@@ -160,7 +167,7 @@ function renderTasks(contexto) {
     card.className = i === 0 ? "task-card top" : "task-card";
 
     const prazo = toDate(task.prazo);
-    const prazoText = prazo ? prazo.toLocaleDateString("pt-BR") : "—";
+    const prazoText = prazo ? diaCalendario(prazo).toLocaleDateString("pt-BR") : "—";
 
     const showSoPc = contexto === "celular" && DEVICE_LEARNABLE_CATEGORIAS.includes(task.categoria);
 
